@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import reactor.core.publisher.Mono;
 import rootmaker.rootmakerbackend.analysis.dto.AnalysisRequest;
 import rootmaker.rootmakerbackend.analysis.dto.AnalysisResponse;
@@ -20,16 +20,16 @@ public class AnalysisController {
 
     private final AnalysisService analysisService;
 
-    @PostMapping("/analysis/summary")
+    @PostMapping("/analysis/summary") // This is a passthrough, not for direct frontend use
     public Mono<ResponseEntity<AnalysisResponse>> getAnalysisSummary(@RequestBody AnalysisRequest request) {
         return analysisService.getAnalysis(request)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/users/{userId}/ml-analysis")
-    public Mono<ResponseEntity<AnalysisResponse>> getUserMlAnalysis(@PathVariable Long userId) {
-        return analysisService.getUserMlAnalysis(userId)
+    @GetMapping("/ml-analysis")
+    public Mono<ResponseEntity<AnalysisResponse>> getUserMlAnalysis(@RequestParam String name, @RequestParam String accountNumber) {
+        return analysisService.getUserMlAnalysis(name, accountNumber)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }

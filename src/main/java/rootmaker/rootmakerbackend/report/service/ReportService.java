@@ -5,7 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import rootmaker.rootmakerbackend.domain.habit.HabitLog;
 import rootmaker.rootmakerbackend.domain.repository.HabitLogRepository;
-import rootmaker.rootmakerbackend.domain.repository.UserRepository;
+import rootmaker.rootmakerbackend.domain.repository.SubscriptionAccountRepository;
+import rootmaker.rootmakerbackend.domain.subscription.SubscriptionAccount;
 import rootmaker.rootmakerbackend.domain.user.User;
 import rootmaker.rootmakerbackend.report.dto.MonthlyReportResponse;
 
@@ -13,22 +14,32 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 public class ReportService {
 
     private final HabitLogRepository habitLogRepository;
-    private final UserRepository userRepository;
+    private final SubscriptionAccountRepository subscriptionAccountRepository;
+
+    private User findUserByNameAndAccountNumber(String name, String accountNumber) {
+        SubscriptionAccount account = subscriptionAccountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+        if (!Objects.equals(account.getUser().getUsername(), name)) {
+            throw new IllegalArgumentException("User name does not match account owner");
+        }
+        return account.getUser();
+    }
 
     @Transactional(readOnly = true)
-    public MonthlyReportResponse generateMonthlyReport(Long userId, int year, int month) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+    public MonthlyReportResponse generateMonthlyReport(String name, String accountNumber, int year, int month) {
+        User user = findUserByNameAndAccountNumber(name, accountNumber);
         YearMonth yearMonth = YearMonth.of(year, month);
         LocalDateTime startOfMonth = yearMonth.atDay(1).atStartOfDay();
         LocalDateTime endOfMonth = yearMonth.atEndOfMonth().atTime(23, 59, 59);
 
-        List<HabitLog> logs = habitLogRepository.findByUserIdAndCreatedAtBetween(userId, startOfMonth, endOfMonth);
+        List<HabitLog> logs = habitLogRepository.findByUserIdAndCreatedAtBetween(user.getId(), startOfMonth, endOfMonth);
 
         long totalCount = logs.size();
         long successCount = logs.stream().filter(HabitLog::isSuccess).count();

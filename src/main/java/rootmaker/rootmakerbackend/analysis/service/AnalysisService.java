@@ -19,6 +19,7 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,12 +27,12 @@ import java.util.stream.Collectors;
 public class AnalysisService {
 
     private final WebClient webClient;
-    private final UserRepository userRepository;
     private final SubscriptionAccountRepository subscriptionAccountRepository;
 
     @Value("${ml.server.url}")
     private String mlServerUrl;
 
+    // This method is now for internal use or direct passthrough
     public Mono<AnalysisResponse> getAnalysis(AnalysisRequest request) {
         return webClient.post()
                 .uri(mlServerUrl + "/analyze/summary")
@@ -41,9 +42,18 @@ public class AnalysisService {
                 .bodyToMono(AnalysisResponse.class);
     }
 
-    public Mono<AnalysisResponse> getUserMlAnalysis(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        SubscriptionAccount account = subscriptionAccountRepository.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("Subscription account not found"));
+    private User findUserByNameAndAccountNumber(String name, String accountNumber) {
+        SubscriptionAccount account = subscriptionAccountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+        if (!Objects.equals(account.getUser().getUsername(), name)) {
+            throw new IllegalArgumentException("User name does not match account owner");
+        }
+        return account.getUser();
+    }
+
+    public Mono<AnalysisResponse> getUserMlAnalysis(String name, String accountNumber) {
+        User user = findUserByNameAndAccountNumber(name, accountNumber);
+        SubscriptionAccount account = subscriptionAccountRepository.findByAccountNumber(accountNumber).get(); // Already fetched in findUser
 
         // 1. profile 데이터 구성
         AnalysisRequest.Profile profile = new AnalysisRequest.Profile(

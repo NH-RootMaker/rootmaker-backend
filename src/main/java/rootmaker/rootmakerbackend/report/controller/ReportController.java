@@ -7,7 +7,7 @@ import rootmaker.rootmakerbackend.report.dto.MonthlyReportResponse;
 import rootmaker.rootmakerbackend.report.service.ReportService;
 
 @RestController
-@RequestMapping("/api/users/{userId}/reports")
+@RequestMapping("/api/reports")
 @RequiredArgsConstructor
 public class ReportController {
 
@@ -15,9 +15,10 @@ public class ReportController {
 
     @GetMapping("/monthly")
     public ResponseEntity<MonthlyReportResponse> getMonthlyReport(
-            @PathVariable Long userId,
+            @RequestParam String name,
+            @RequestParam String accountNumber,
             @RequestParam int year,
             @RequestParam int month) {
-        return ResponseEntity.ok(reportService.generateMonthlyReport(userId, year, month));
+        return ResponseEntity.ok(reportService.generateMonthlyReport(name, accountNumber, year, month));
     }
 }

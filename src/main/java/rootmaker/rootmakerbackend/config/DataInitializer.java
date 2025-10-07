@@ -4,9 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import rootmaker.rootmakerbackend.domain.habit.Habit;
+import rootmaker.rootmakerbackend.domain.repository.AutoDebitRepository;
+import rootmaker.rootmakerbackend.domain.repository.BufferAccountRepository;
 import rootmaker.rootmakerbackend.domain.repository.HabitRepository;
 import rootmaker.rootmakerbackend.domain.repository.SubscriptionAccountRepository;
 import rootmaker.rootmakerbackend.domain.repository.UserRepository;
+import rootmaker.rootmakerbackend.domain.subscription.AutoDebit;
+import rootmaker.rootmakerbackend.domain.subscription.BufferAccount;
 import rootmaker.rootmakerbackend.domain.subscription.DepositHistory;
 import rootmaker.rootmakerbackend.domain.subscription.SubscriptionAccount;
 import rootmaker.rootmakerbackend.domain.user.User;
@@ -23,14 +27,21 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final SubscriptionAccountRepository subscriptionAccountRepository;
     private final HabitRepository habitRepository;
+    private final BufferAccountRepository bufferAccountRepository;
+    private final AutoDebitRepository autoDebitRepository;
 
     @Override
     public void run(String... args) throws Exception {
-        // DB에 데이터가 없으면 생성
         if (userRepository.count() == 0) {
-            createMockUser("김청약", "20s", "11", "3k-4k", "PINE", 25);
-            createMockUser("이주택", "30s", "41", "5k-6k", "CHERRY", 10);
-            createMockUser("박내집", "40s", "28", "7k-8k", "MAPLE", 15);
+            // 시나리오 1: 신규 사용자
+            User newUser = User.builder().username("김신규").ageBand("20s").regionCode("11").incomeBand("3k-4k").payday(10).build();
+            userRepository.save(newUser);
+
+            // 시나리오 2: 청약 계좌만 있는 사용자
+            createSubscriptionOnlyUser("이청약", "302-1111-2222-01");
+
+            // 시나리오 3: 모든 설정이 완료된 사용자
+            createFullySetupUser("박완성", "302-3333-4444-01");
         }
 
         if (habitRepository.count() == 0) {
@@ -40,40 +51,41 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    private void createMockUser(String username, String ageBand, String regionCode, String incomeBand, String typeCode, int payday) {
-        User user = User.builder()
-                .username(username)
-                .ageBand(ageBand)
-                .regionCode(regionCode)
-                .incomeBand(incomeBand)
-                .typeCode(typeCode)
-                .payday(payday)
-                .build();
+    private void createSubscriptionOnlyUser(String username, String accountNumber) {
+        User user = User.builder().username(username).ageBand("30s").regionCode("41").incomeBand("5k-6k").typeCode("CHERRY").payday(25).build();
         userRepository.save(user);
+        createSubscriptionAccount(user, accountNumber);
+    }
 
+    private void createFullySetupUser(String username, String accountNumber) {
+        User user = User.builder().username(username).ageBand("40s").regionCode("28").incomeBand("7k-8k").typeCode("MAPLE").payday(15).build();
+        userRepository.save(user);
+        SubscriptionAccount subAccount = createSubscriptionAccount(user, accountNumber);
+
+        BufferAccount bufferAccount = BufferAccount.builder().user(user).balance(new BigDecimal("50000")).build();
+        bufferAccountRepository.save(bufferAccount);
+
+        AutoDebit autoDebit = AutoDebit.builder().subscriptionAccount(subAccount).amount(new BigDecimal("10000")).transferDay(15).isActive(true).build();
+        autoDebitRepository.save(autoDebit);
+    }
+
+    private SubscriptionAccount createSubscriptionAccount(User user, String accountNumber) {
         SubscriptionAccount account = SubscriptionAccount.builder()
                 .user(user)
-                .accountNumber(generateRandomAccountNumber())
+                .accountNumber(accountNumber)
+                .accountType("YOUTH_DREAM")
                 .build();
 
         Random random = new Random();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
-
         for (int i = 1; i <= 12; i++) {
-            String month = YearMonth.now().minusMonths(i).format(formatter);
-            DepositHistory history = DepositHistory.builder()
-                    .month(month)
-                    .amount(100000.0 + (random.nextDouble() * 50000)) // 10만원 ~ 15만원
-                    .count(random.nextInt(3) + 1) // 1~3회
+            account.addDepositHistory(DepositHistory.builder()
+                    .month(YearMonth.now().minusMonths(i).format(formatter))
+                    .amount(100000.0 + (random.nextDouble() * 50000))
+                    .count(random.nextInt(3) + 1)
                     .auto(random.nextBoolean())
-                    .build();
-            account.addDepositHistory(history);
+                    .build());
         }
-        subscriptionAccountRepository.save(account);
-    }
-
-    private String generateRandomAccountNumber() {
-        Random random = new Random();
-        return String.format("302-%04d-%06d-01", random.nextInt(10000), random.nextInt(1000000));
+        return subscriptionAccountRepository.save(account);
     }
 }

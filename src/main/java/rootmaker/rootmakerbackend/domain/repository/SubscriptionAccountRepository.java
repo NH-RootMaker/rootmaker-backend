@@ -6,5 +6,6 @@ import rootmaker.rootmakerbackend.domain.subscription.SubscriptionAccount;
 import java.util.Optional;
 
 public interface SubscriptionAccountRepository extends JpaRepository<SubscriptionAccount, Long> {
+    Optional<SubscriptionAccount> findByAccountNumber(String accountNumber);
     Optional<SubscriptionAccount> findByUserId(Long userId);
 }

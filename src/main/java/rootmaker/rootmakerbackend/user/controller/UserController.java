@@ -7,15 +7,15 @@ import rootmaker.rootmakerbackend.user.dto.UserTypeUpdateRequest;
 import rootmaker.rootmakerbackend.user.service.UserService;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
-    @PutMapping("/{userId}/type")
-    public ResponseEntity<Void> updateUserType(@PathVariable Long userId, @RequestBody UserTypeUpdateRequest request) {
-        userService.updateUserType(userId, request.userType());
+    @PutMapping("/type")
+    public ResponseEntity<Void> updateUserType(@RequestParam String name, @RequestBody UserTypeUpdateRequest request) {
+        userService.updateUserType(name, request.userType());
         return ResponseEntity.ok().build();
     }
 }

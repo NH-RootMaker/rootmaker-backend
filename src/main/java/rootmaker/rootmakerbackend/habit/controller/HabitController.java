@@ -19,9 +19,9 @@ public class HabitController {
         return ResponseEntity.ok(habitService.getTodayHabit());
     }
 
-    @PostMapping("/users/{userId}/habit-logs")
-    public ResponseEntity<Void> logHabit(@PathVariable Long userId, @RequestBody HabitLogRequest request) {
-        habitService.logHabit(userId, request);
+    @PostMapping("/habit-logs")
+    public ResponseEntity<Void> logHabit(@RequestParam String name, @RequestParam String accountNumber, @RequestBody HabitLogRequest request) {
+        habitService.logHabit(name, accountNumber, request);
         return ResponseEntity.ok().build();
     }
 }

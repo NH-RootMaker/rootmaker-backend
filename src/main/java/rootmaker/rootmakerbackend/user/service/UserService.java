@@ -13,10 +13,9 @@ public class UserService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void updateUserType(Long userId, String userType) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    public void updateUserType(String name, String userType) {
+        User user = userRepository.findByUsername(name)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + name));
         user.setUserType(userType);
-        userRepository.save(user);
     }
 }
