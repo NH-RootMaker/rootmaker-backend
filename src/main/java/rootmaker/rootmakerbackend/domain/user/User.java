@@ -3,6 +3,9 @@ package rootmaker.rootmakerbackend.domain.user;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -25,5 +28,25 @@ public class User {
     private String typeCode;
     private Integer payday;
 
+    // --- 청약 가점 계산용 상세 정보 (nullable) ---
+    private String birthDate;
+    private String maritalStatus;
+    private String marriageDate;
+    private String homelessStartDate;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<Dependent> dependents = new ArrayList<>();
+
     private String userType; // 프론트엔드에서 분석한 사용자 유형 (예: PINE, BAMBOO)
+
+    // 연관관계 편의 메서드
+    public void addDependent(Dependent dependent) {
+        dependents.add(dependent);
+        dependent.setUser(this);
+    }
+
+    public void clearDependents() {
+        this.dependents.clear();
+    }
 }
