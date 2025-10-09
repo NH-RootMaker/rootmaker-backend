@@ -16,3 +16,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+ml:
+  server:
+    url: http://localhost:8000 # 실제 ML 서버 주소로 변경해야 합니다.

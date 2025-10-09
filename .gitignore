@@ -5,6 +5,7 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 .env
+logic/
 
 ### STS ###
 .apt_generated
