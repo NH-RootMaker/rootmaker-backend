@@ -12,11 +12,25 @@ public record AnalysisRequest(
     Formula formula
 ) {
     public record Profile(
-        String ageBand,
+        // ageBand는 birthDate로 대체
         String regionCode,
         String incomeBand,
         String typeCode,
-        Integer payday
+        Integer payday,
+
+        // 청약 가점 계산용 상세 정보 (nullable)
+        String birthDate,
+        String maritalStatus,
+        String marriageDate,
+        String homelessStartDate,
+        String subscriptionStartDate,
+        List<Dependent> dependents
+    ) {}
+
+    public record Dependent(
+        String relationship,
+        String birthDate,
+        boolean cohabiting
     ) {}
 
     public record SeriesItem(

@@ -28,6 +28,9 @@ public class SubscriptionAccount {
     private String accountNumber; // 가상 계좌번호
     private String accountType; // 계좌 유형 (예: REGULAR, YOUTH_DREAM)
 
+    // --- 청약 가점 계산용 상세 정보 (nullable) ---
+    private String subscriptionStartDate;
+
     @Builder.Default
     @OneToMany(mappedBy = "subscriptionAccount", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DepositHistory> depositHistories = new ArrayList<>();
