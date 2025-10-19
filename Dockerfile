@@ -10,7 +10,7 @@ COPY src ./src
 RUN chmod +x ./gradlew
 
 # Build the project
-RUN ./gradlew build -x test --no-daemon
+RUN GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx1024m" ./gradlew build -x test --no-daemon
 
 # Stage 2: Create the runtime image
 FROM amazoncorretto:17-alpine-jdk
