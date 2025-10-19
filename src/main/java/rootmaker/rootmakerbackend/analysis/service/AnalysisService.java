@@ -60,7 +60,10 @@ public class AnalysisService {
                 .map(d -> new AnalysisRequest.Dependent(d.getRelationship(), d.getBirthDate(), d.isCohabiting()))
                 .collect(Collectors.toList());
 
+        String ageBand = calculateAgeBand(user.getBirthDate());
+
         AnalysisRequest.Profile profile = new AnalysisRequest.Profile(
+                ageBand,
                 user.getRegionCode(),
                 user.getIncomeBand(),
                 user.getTypeCode(),
@@ -145,5 +148,21 @@ public class AnalysisService {
 
         // 5. ML 서버에 분석 요청
         return getAnalysis(request);
+    }
+
+    private String calculateAgeBand(String birthDate) {
+        if (birthDate == null || birthDate.length() < 4) {
+            return "unknown"; // 또는 다른 기본값
+        }
+        int birthYear = Integer.parseInt(birthDate.substring(0, 4));
+        int currentYear = YearMonth.now().getYear();
+        int age = currentYear - birthYear;
+
+        if (age < 20) return "10s";
+        if (age < 30) return "20s";
+        if (age < 40) return "30s";
+        if (age < 50) return "40s";
+        if (age < 60) return "50s";
+        return "60s+";
     }
 }
