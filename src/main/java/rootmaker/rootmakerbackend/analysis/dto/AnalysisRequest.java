@@ -12,6 +12,7 @@ public record AnalysisRequest(
     Formula formula
 ) {
     public record Profile(
+        String ageBand,
         // ageBand는 birthDate로 대체
         String regionCode,
         String incomeBand,

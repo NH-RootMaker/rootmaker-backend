@@ -1,10 +1,7 @@
 package rootmaker.rootmakerbackend.domain.subscription;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import rootmaker.rootmakerbackend.domain.user.User;
 
 import java.util.ArrayList;
@@ -38,5 +35,9 @@ public class SubscriptionAccount {
     public void addDepositHistory(DepositHistory history) {
         depositHistories.add(history);
         history.setSubscriptionAccount(this);
+    }
+
+    public void setSubscriptionStartDate(String subscriptionStartDate) {
+        this.subscriptionStartDate = subscriptionStartDate;
     }
 }

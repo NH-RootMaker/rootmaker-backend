@@ -3,12 +3,10 @@ package rootmaker.rootmakerbackend.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import rootmaker.rootmakerbackend.domain.habit.Habit;
-import rootmaker.rootmakerbackend.domain.repository.AutoDebitRepository;
-import rootmaker.rootmakerbackend.domain.repository.BufferAccountRepository;
-import rootmaker.rootmakerbackend.domain.repository.HabitRepository;
-import rootmaker.rootmakerbackend.domain.repository.SubscriptionAccountRepository;
-import rootmaker.rootmakerbackend.domain.repository.UserRepository;
+import rootmaker.rootmakerbackend.domain.repository.*;
 import rootmaker.rootmakerbackend.domain.subscription.AutoDebit;
 import rootmaker.rootmakerbackend.domain.subscription.BufferAccount;
 import rootmaker.rootmakerbackend.domain.subscription.DepositHistory;
@@ -20,6 +18,7 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
@@ -31,8 +30,11 @@ public class DataInitializer implements CommandLineRunner {
     private final AutoDebitRepository autoDebitRepository;
 
     @Override
+    @Transactional
     public void run(String... args) throws Exception {
+        log.info("DataInitializer running...");
         if (userRepository.count() == 0) {
+            log.info("User table is empty. Creating initial data...");
             // 시나리오 1: 신규 사용자
             User newUser = User.builder().username("김신규").ageBand("20s").regionCode("11").incomeBand("3k-4k").payday(10).build();
             userRepository.save(newUser);
@@ -52,13 +54,34 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void createSubscriptionOnlyUser(String username, String accountNumber) {
-        User user = User.builder().username(username).ageBand("30s").regionCode("41").incomeBand("5k-6k").typeCode("CHERRY").payday(25).build();
+        User user = User.builder()
+                .username(username)
+                .ageBand("30s")
+                .regionCode("41")
+                .incomeBand("5k-6k")
+                .typeCode("CHERRY")
+                .payday(25)
+                .birthDate("1992-08-15")
+                .maritalStatus("SINGLE")
+                .homelessStartDate("2021-01-01")
+                .build();
         userRepository.save(user);
         createSubscriptionAccount(user, accountNumber);
     }
 
     private void createFullySetupUser(String username, String accountNumber) {
-        User user = User.builder().username(username).ageBand("40s").regionCode("28").incomeBand("7k-8k").typeCode("MAPLE").payday(15).build();
+        User user = User.builder()
+                .username(username)
+                .ageBand("40s")
+                .regionCode("28")
+                .incomeBand("7k-8k")
+                .typeCode("MAPLE")
+                .payday(15)
+                .birthDate("1985-03-20")
+                .maritalStatus("MARRIED")
+                .marriageDate("2015-05-10")
+                .homelessStartDate("2018-11-01")
+                .build();
         userRepository.save(user);
         SubscriptionAccount subAccount = createSubscriptionAccount(user, accountNumber);
 
@@ -74,6 +97,7 @@ public class DataInitializer implements CommandLineRunner {
                 .user(user)
                 .accountNumber(accountNumber)
                 .accountType("YOUTH_DREAM")
+                .subscriptionStartDate("2020-02-29") // 청약 계좌 생성일 추가
                 .build();
 
         Random random = new Random();
