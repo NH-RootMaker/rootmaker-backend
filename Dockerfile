@@ -13,7 +13,7 @@ RUN chmod +x ./gradlew
 RUN ./gradlew build -x test --no-daemon
 
 # Stage 2: Create the runtime image
-FROM amazoncorretto:17-jre-alpine
+FROM amazoncorretto:17-alpine-jdk
 WORKDIR /app
 
 # Copy the built jar file from the build stage
