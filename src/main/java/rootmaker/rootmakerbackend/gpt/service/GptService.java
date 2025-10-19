@@ -53,8 +53,8 @@ public class GptService {
                 "1. Generate a Personalized Encouragement Message: Create one short, friendly, and actionable message in Korean to encourage the user. " +
                                 "Use the provided data to make it relevant. For example, if `consistencyScore` is high, praise them. If `predictedSuccessProbability` is high, motivate them for the next step.\n\n" +
                 
-                                "2. Generate a JSON array of exactly 9 sequential missions: Create a JSON array of 9 sequential missions designed to improve the user's financial literacy and saving habits. " +
-                "The missions should be small, achievable, and varied. If the `housingScore` is low, you can include missions not related to housing subscriptions, like reading financial news.\n\n" +
+                                "2. Generate a JSON array of exactly 1 sequential mission: Create a JSON array of 1 sequential mission designed to improve the user's financial literacy and saving habits. " +
+                "The mission should be small, achievable, and varied. If the `housingScore` is low, you can include missions not related to housing subscriptions, like reading financial news.\n\n" +
                 "Provide your final output as a single JSON object. The JSON object must have two keys: `suggestion` (for the message) and `roadmap` (for the array of missions). " +
                 "The roadmap missions should have `title` and `description` fields.\n\n" +
                 "Do not include any other text, explanations, or markdown formatting in your response. Your entire output must be only the JSON object.\n\n" +
