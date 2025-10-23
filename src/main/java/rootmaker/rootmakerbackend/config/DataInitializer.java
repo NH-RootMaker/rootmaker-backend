@@ -34,16 +34,27 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.info("DataInitializer running...");
         if (userRepository.count() == 0) {
-            log.info("User table is empty. Creating initial data...");
-            // 시나리오 1: 신규 사용자
-            User newUser = User.builder().username("김신규").ageBand("20s").regionCode("11").incomeBand("3k-4k").payday(10).build();
-            userRepository.save(newUser);
+            log.info("User table is empty. Creating initial data for mingyu...");
+            User mingyu = User.builder()
+                    .username("mingyu")
+                    .ageBand("20s")
+                    .regionCode("11") // Seoul
+                    .incomeBand("4k-5k")
+                    .payday(25)
+                    .birthDate("1999-01-01")
+                    .maritalStatus("SINGLE")
+                    .homelessStartDate("2022-01-01")
+                    .typeCode("MAPLE")
+                    .build();
+            userRepository.save(mingyu);
 
-            // 시나리오 2: 청약 계좌만 있는 사용자
-            createSubscriptionOnlyUser("이청약", "302-1111-2222-01");
+            SubscriptionAccount subAccount = createSubscriptionAccount(mingyu, "1234567890");
 
-            // 시나리오 3: 모든 설정이 완료된 사용자
-            createFullySetupUser("박완성", "302-3333-4444-01");
+            BufferAccount bufferAccount = BufferAccount.builder().user(mingyu).balance(new BigDecimal("50000")).build();
+            bufferAccountRepository.save(bufferAccount);
+
+            AutoDebit autoDebit = AutoDebit.builder().subscriptionAccount(subAccount).amount(new BigDecimal("10000")).transferDay(25).isActive(true).build();
+            autoDebitRepository.save(autoDebit);
         }
 
         if (habitRepository.count() == 0) {
@@ -51,45 +62,6 @@ public class DataInitializer implements CommandLineRunner {
             habitRepository.save(Habit.builder().content("택시 대신 대중교통 이용하고 차액 저축하기").savingAmount(new BigDecimal("5000")).build());
             habitRepository.save(Habit.builder().content("하루 커피 한 잔 값 아껴서 저축하기").savingAmount(new BigDecimal("4500")).build());
         }
-    }
-
-    private void createSubscriptionOnlyUser(String username, String accountNumber) {
-        User user = User.builder()
-                .username(username)
-                .ageBand("30s")
-                .regionCode("41")
-                .incomeBand("5k-6k")
-                .typeCode("CHERRY")
-                .payday(25)
-                .birthDate("1992-08-15")
-                .maritalStatus("SINGLE")
-                .homelessStartDate("2021-01-01")
-                .build();
-        userRepository.save(user);
-        createSubscriptionAccount(user, accountNumber);
-    }
-
-    private void createFullySetupUser(String username, String accountNumber) {
-        User user = User.builder()
-                .username(username)
-                .ageBand("40s")
-                .regionCode("28")
-                .incomeBand("7k-8k")
-                .typeCode("MAPLE")
-                .payday(15)
-                .birthDate("1985-03-20")
-                .maritalStatus("MARRIED")
-                .marriageDate("2015-05-10")
-                .homelessStartDate("2018-11-01")
-                .build();
-        userRepository.save(user);
-        SubscriptionAccount subAccount = createSubscriptionAccount(user, accountNumber);
-
-        BufferAccount bufferAccount = BufferAccount.builder().user(user).balance(new BigDecimal("50000")).build();
-        bufferAccountRepository.save(bufferAccount);
-
-        AutoDebit autoDebit = AutoDebit.builder().subscriptionAccount(subAccount).amount(new BigDecimal("10000")).transferDay(15).isActive(true).build();
-        autoDebitRepository.save(autoDebit);
     }
 
     private SubscriptionAccount createSubscriptionAccount(User user, String accountNumber) {

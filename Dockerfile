@@ -1,5 +1,5 @@
 # Stage 1: Build the application using gradle wrapper
-FROM gradle:8.5.0-jdk17-alpine AS build
+FROM gradle:8.5.0-jdk17 AS build
 WORKDIR /home/gradle/src
 COPY gradlew .
 COPY gradle ./gradle
